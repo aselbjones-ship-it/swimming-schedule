@@ -341,9 +341,11 @@ function updateDayExclusivity() {
       const slots = getSlots(dateKey, id);
 
       // Which slot has the current user already picked on this day?
+      // Use DOM for own slots (reflects immediately after click, before Firebase confirms)
+      // but fall back to dbData so applyDbData() also works correctly on page load.
       const myCheckedKey = slots.find(({ key: slotKey }) => {
         const cb = document.getElementById(`s${id}-cb-${slotKey}-${currentUser}`);
-        return cb?.checked;
+        return cb?.checked || dbData[slotKey]?.[currentUser];
       })?.key ?? null;
 
       // For Young 1:1: which slots are claimed by other members?
