@@ -333,36 +333,34 @@ function buildAllTables() {
 }
 
 function updateDayExclusivity() {
-  if (!currentUser) return;
-  SESSION_CONFIG.forEach(({ id, start, end, young, older }) => {
-    const names = [...young, ...older];
-    if (!names.includes(currentUser)) return;
-    const isYoung = young.includes(currentUser);
-
+  SESSION_CONFIG.forEach(({ id, start, end, young }) => {
     getThursdays(start, end).forEach(({ key: dateKey }) => {
       const slots = getSlots(dateKey, id);
 
-      // dbData is the single source of truth — it's optimistically updated on click
-      // so it's always current whether reading for self or for other 1:1 members.
-      const mySlot = slots.find(({ key: slotKey }) => dbData[slotKey]?.[currentUser])?.key ?? null;
-
-      const takenByOthers = new Set();
-      if (isYoung) {
-        young.forEach(name => {
-          if (name === currentUser) return;
-          slots.forEach(({ key: slotKey }) => {
-            if (dbData[slotKey]?.[name]) takenByOthers.add(slotKey);
-          });
+      // Build map of which Young 1:1 member has claimed each slot
+      const claimedBy = {};
+      young.forEach(name => {
+        slots.forEach(({ key: slotKey }) => {
+          if (dbData[slotKey]?.[name]) claimedBy[slotKey] = name;
         });
-      }
+      });
 
-      slots.forEach(({ key: slotKey }) => {
-        const cb = document.getElementById(`s${id}-cb-${slotKey}-${currentUser}`);
-        const lbl = cb?.nextElementSibling;
-        if (!cb || !lbl) return;
-        const blocked = (mySlot && slotKey !== mySlot) || takenByOthers.has(slotKey);
-        lbl.classList.toggle('slot-blocked', !!blocked);
-        cb.disabled = !!blocked;
+      // Apply blocking visuals to every Young 1:1 member's column
+      young.forEach(name => {
+        const mySlot = slots.find(({ key: slotKey }) => claimedBy[slotKey] === name)?.key ?? null;
+
+        slots.forEach(({ key: slotKey }) => {
+          const cb = document.getElementById(`s${id}-cb-${slotKey}-${name}`);
+          const lbl = cb?.nextElementSibling;
+          if (!lbl) return;
+
+          const blocked =
+            (mySlot && slotKey !== mySlot) ||
+            (claimedBy[slotKey] && claimedBy[slotKey] !== name);
+
+          lbl.classList.toggle('slot-blocked', !!blocked);
+          if (cb && name === currentUser) cb.disabled = !!blocked;
+        });
       });
     });
   });
