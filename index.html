@@ -120,8 +120,6 @@
   .check-cell label:not(.mine) { cursor: default; pointer-events: none; }
   .check-cell label.other-checked { background: #dcfce7; border-color: #16a34a; }
   .check-cell label.other-checked::after { content: '✓'; color: #16a34a; font-weight: 900; font-size: 1.1rem; }
-  .check-cell.greyed label { background: #f3f4f6; border-color: #e5e7eb; pointer-events: none; cursor: default; }
-  .check-cell.greyed label::after { display: none; }
 </style>
 </head>
 <body>
@@ -301,7 +299,9 @@ function buildSession({ id, start, end, young, older }) {
         const greyed = (isOlder && !isLastSlot) || (isYoung && isLastSlot);
         const isMine = name === currentUser && !greyed;
         const divClass = name === older[0] ? ' older-start' : '';
-        html += `<td class="check-cell${divClass}${greyed ? ' greyed' : ''}">
+        html += greyed
+          ? `<td class="${divClass.trim()}"></td>`
+          : `<td class="check-cell${divClass}">
           <input type="checkbox" id="${cbId}" ${isMine ? '' : 'disabled'}>
           <label for="${cbId}" class="${isMine ? 'mine' : ''}"></label>
         </td>`;
