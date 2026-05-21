@@ -317,6 +317,8 @@ function buildSession({ id, start, end, young, older }) {
         if (isOlder && !isLastSlot) return;
         const cb = document.getElementById(`s${id}-cb-${slotKey}-${name}`);
         if (cb) cb.addEventListener('change', () => {
+          if (!dbData[slotKey]) dbData[slotKey] = {};
+          dbData[slotKey][name] = cb.checked;
           ref.child(slotKey).child(name).set(cb.checked);
           updateDayExclusivity();
         });
@@ -340,15 +342,10 @@ function updateDayExclusivity() {
     getThursdays(start, end).forEach(({ key: dateKey }) => {
       const slots = getSlots(dateKey, id);
 
-      // Which slot has the current user already picked on this day?
-      // Use DOM for own slots (reflects immediately after click, before Firebase confirms)
-      // but fall back to dbData so applyDbData() also works correctly on page load.
-      const myCheckedKey = slots.find(({ key: slotKey }) => {
-        const cb = document.getElementById(`s${id}-cb-${slotKey}-${currentUser}`);
-        return cb?.checked || dbData[slotKey]?.[currentUser];
-      })?.key ?? null;
+      // dbData is the single source of truth — it's optimistically updated on click
+      // so it's always current whether reading for self or for other 1:1 members.
+      const mySlot = slots.find(({ key: slotKey }) => dbData[slotKey]?.[currentUser])?.key ?? null;
 
-      // For Young 1:1: which slots are claimed by other members?
       const takenByOthers = new Set();
       if (isYoung) {
         young.forEach(name => {
@@ -363,7 +360,7 @@ function updateDayExclusivity() {
         const cb = document.getElementById(`s${id}-cb-${slotKey}-${currentUser}`);
         const lbl = cb?.nextElementSibling;
         if (!cb || !lbl) return;
-        const blocked = (myCheckedKey && slotKey !== myCheckedKey) || takenByOthers.has(slotKey);
+        const blocked = (mySlot && slotKey !== mySlot) || takenByOthers.has(slotKey);
         lbl.classList.toggle('slot-blocked', !!blocked);
         cb.disabled = !!blocked;
       });
