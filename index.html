@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Swimming Schedule 2026</title>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f0f9ff; min-height: 100vh; }
+
+  header {
+    background: linear-gradient(135deg, #0ea5e9 0%, #0369a1 100%);
+    color: white; padding: 24px 20px; text-align: center;
+    box-shadow: 0 4px 20px rgba(14,165,233,0.3);
+  }
+  header h1 { font-size: clamp(1.4rem, 5vw, 2rem); font-weight: 700; letter-spacing: -0.5px; }
+  header p { opacity: 0.85; margin-top: 6px; font-size: 0.9rem; }
+
+  #name-modal {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+    display: flex; align-items: center; justify-content: center; z-index: 100;
+  }
+  #name-modal.hidden { display: none; }
+  .modal-box {
+    background: white; border-radius: 20px; padding: 32px 28px;
+    text-align: center; max-width: 340px; width: 90%;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+  }
+  .modal-box h2 { font-size: 1.3rem; margin-bottom: 8px; color: #1f2937; }
+  .modal-box p { color: #6b7280; font-size: 0.9rem; margin-bottom: 24px; }
+  .name-btn {
+    display: block; width: 100%; padding: 14px;
+    margin-bottom: 12px; border: 2px solid #e5e7eb;
+    border-radius: 12px; background: white; font-size: 1rem;
+    font-weight: 600; color: #374151; cursor: pointer; transition: all 0.15s;
+  }
+  .name-btn:hover { border-color: #0ea5e9; color: #0ea5e9; background: #f0f9ff; }
+  .name-btn:last-child { margin-bottom: 0; }
+
+  #badge-wrap { text-align: center; }
+  #user-badge {
+    background: white; margin: 16px auto; padding: 10px 16px;
+    border-radius: 50px; display: inline-flex; align-items: center; gap: 8px;
+    font-size: 0.85rem; color: #374151; box-shadow: 0 2px 8px rgba(0,0,0,0.08); cursor: pointer;
+  }
+  #user-badge .dot { width: 8px; height: 8px; border-radius: 50%; background: #10b981; }
+  #user-badge .dot.offline { background: #ef4444; }
+
+  .table-wrap { overflow-x: auto; padding: 0 12px 40px; max-width: 860px; margin: 0 auto; }
+
+  table {
+    width: 100%; border-collapse: collapse; background: white;
+    border-radius: 16px; overflow: hidden; box-shadow: 0 2px 16px rgba(0,0,0,0.07);
+  }
+
+  /* Two-row header */
+  thead tr.group-row th {
+    padding: 12px 10px 8px; font-size: 0.78rem; font-weight: 700;
+    text-align: center; text-transform: uppercase; letter-spacing: 0.7px;
+  }
+  .th-date { background: #f1f5f9; color: #64748b; }
+  .th-young { background: #f5f3ff; color: #6d28d9; border-left: 2px solid #e9d5ff; }
+  .th-older { background: #fff7ed; color: #c2410c; border-left: 2px solid #fed7aa; }
+
+  thead tr.name-row th {
+    padding: 10px 8px; font-size: 0.82rem; font-weight: 600;
+    text-align: center; white-space: nowrap;
+  }
+  .th-date-name { background: #0ea5e9; color: white; text-align: left; padding-left: 16px; min-width: 120px; }
+  .th-young-name { background: #7c3aed; color: white; }
+  .th-older-name { background: #ea580c; color: white; }
+  .th-older-name:first-of-type { border-left: 2px solid rgba(255,255,255,0.3); }
+
+  /* Session header rows */
+  .session-row td {
+    padding: 10px 16px; font-weight: 700; font-size: 0.8rem;
+    text-transform: uppercase; letter-spacing: 0.8px;
+    background: #0ea5e9; color: white; border-top: 2px solid #bae6fd;
+  }
+
+  /* Date rows */
+  tbody tr.date-row td {
+    padding: 10px 8px; border-bottom: 1px solid #f0f9ff; vertical-align: middle;
+  }
+  tbody tr.date-row td:first-child { padding-left: 16px; font-size: 0.85rem; color: #374151; font-weight: 500; }
+
+  /* Group dividers in data rows */
+  td.older-start { border-left: 2px solid #e5e7eb; }
+
+  /* Checkboxes */
+  .check-cell { text-align: center; }
+  .check-cell input[type=checkbox] { display: none; }
+  .check-cell label {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 34px; height: 34px; border-radius: 8px;
+    border: 2px solid #d1d5db; background: white; cursor: pointer; transition: all 0.15s;
+  }
+  .check-cell input:checked + label { background: #dcfce7; border-color: #16a34a; }
+  .check-cell input:checked + label::after { content: '✓'; color: #16a34a; font-weight: 900; font-size: 1.15rem; }
+  .check-cell label:not(.mine) { cursor: default; pointer-events: none; }
+  .check-cell label.other-checked { background: #dcfce7; border-color: #16a34a; }
+  .check-cell label.other-checked::after { content: '✓'; color: #16a34a; font-weight: 900; font-size: 1.15rem; }
+</style>
+</head>
+<body>
+
+<div id="name-modal">
+  <div class="modal-box">
+    <h2>🏊 Who are you?</h2>
+    <p>Pick your name to check off your Thursday lessons</p>
+    <button class="name-btn" onclick="setUser('Chloe')">Chloe</button>
+    <button class="name-btn" onclick="setUser('Noelle')">Noelle</button>
+    <button class="name-btn" onclick="setUser('Remy')">Remy</button>
+    <button class="name-btn" onclick="setUser('Luke')">Luke</button>
+    <button class="name-btn" onclick="setUser('Max')">Max</button>
+  </div>
+</div>
+
+<header>
+  <h1>🏊 Swimming Schedule 2026</h1>
+  <p>Check the Thursdays you'll be attending your lesson</p>
+</header>
+
+<div id="badge-wrap">
+  <div id="user-badge" onclick="changeUser()">
+    <span class="dot" id="conn-dot"></span>
+    <span id="badge-name">...</span>
+    <span style="color:#9ca3af;font-size:0.8rem">· tap to change</span>
+  </div>
+</div>
+
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr class="group-row">
+        <th class="th-date" rowspan="2">Date</th>
+        <th class="th-young" colspan="2">Young 1:1</th>
+        <th class="th-older" colspan="3">Older Group</th>
+      </tr>
+      <tr class="name-row">
+        <th class="th-young-name">Chloe</th>
+        <th class="th-young-name">Noelle</th>
+        <th class="th-older-name" style="border-left:2px solid rgba(255,255,255,0.3)">Remy</th>
+        <th class="th-older-name">Luke</th>
+        <th class="th-older-name">Max</th>
+      </tr>
+    </thead>
+    <tbody id="table-body"></tbody>
+  </table>
+</div>
+
+<script>
+const firebaseConfig = {
+  databaseURL: "https://lala-schedule-13f59-default-rtdb.firebaseio.com/"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+const ref = db.ref('swimming');
+
+const NAMES = ['Chloe', 'Noelle', 'Remy', 'Luke', 'Max'];
+let currentUser = localStorage.getItem('swim-user') || null;
+let dbData = {};
+
+const SESSIONS = [
+  { label: 'Session 1 — June 4 to July 9',     start: [2026,5,4],  end: [2026,6,9]  },
+  { label: 'Session 2 — July 16 to August 20',  start: [2026,6,16], end: [2026,7,20] }
+];
+
+function getThursdays(start, end) {
+  const dates = [];
+  const d = new Date(...start);
+  const last = new Date(...end);
+  while (d <= last) {
+    if (d.getDay() === 4) {
+      dates.push({ date: new Date(d), key: d.toISOString().slice(0,10) });
+    }
+    d.setDate(d.getDate() + 1);
+  }
+  return dates;
+}
+
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function fmt(d) { return `Thu, ${MONTHS[d.getMonth()]} ${d.getDate()}`; }
+
+function buildTable() {
+  const tbody = document.getElementById('table-body');
+  tbody.innerHTML = '';
+
+  SESSIONS.forEach(({ label, start, end }) => {
+    const srow = document.createElement('tr');
+    srow.className = 'session-row';
+    srow.innerHTML = `<td colspan="6">${label}</td>`;
+    tbody.appendChild(srow);
+
+    getThursdays(start, end).forEach(({ date, key }) => {
+      const tr = document.createElement('tr');
+      tr.className = 'date-row';
+      tr.id = `row-${key}`;
+
+      let html = `<td>${fmt(date)}</td>`;
+      NAMES.forEach(name => {
+        const id = `cb-${key}-${name}`;
+        const isMine = name === currentUser;
+        const divClass = name === 'Remy' ? ' older-start' : '';
+        html += `<td class="check-cell${divClass}">
+          <input type="checkbox" id="${id}" data-key="${key}" data-name="${name}" ${isMine ? '' : 'disabled'}>
+          <label for="${id}" class="${isMine ? 'mine' : ''}"></label>
+        </td>`;
+      });
+      tr.innerHTML = html;
+      tbody.appendChild(tr);
+
+      NAMES.forEach(name => {
+        if (name === currentUser) {
+          const cb = document.getElementById(`cb-${key}-${name}`);
+          if (cb) cb.addEventListener('change', () => {
+            ref.child(key).child(name).set(cb.checked);
+          });
+        }
+      });
+    });
+  });
+
+  applyDbData();
+}
+
+function applyDbData() {
+  SESSIONS.forEach(({ start, end }) => {
+    getThursdays(start, end).forEach(({ key }) => {
+      const dayData = dbData[key] || {};
+      NAMES.forEach(name => {
+        const checked = !!dayData[name];
+        const cb = document.getElementById(`cb-${key}-${name}`);
+        const lbl = cb?.nextElementSibling;
+        if (!cb) return;
+        cb.checked = checked;
+        if (lbl && name !== currentUser) lbl.classList.toggle('other-checked', checked);
+      });
+    });
+  });
+}
+
+function setUser(name) {
+  currentUser = name;
+  localStorage.setItem('swim-user', name);
+  document.getElementById('name-modal').classList.add('hidden');
+  document.getElementById('badge-name').textContent = name;
+  buildTable();
+}
+
+function changeUser() {
+  localStorage.removeItem('swim-user');
+  currentUser = null;
+  document.getElementById('name-modal').classList.remove('hidden');
+}
+
+firebase.database().ref('.info/connected').on('value', snap => {
+  document.getElementById('conn-dot').classList.toggle('offline', !snap.val());
+});
+
+ref.on('value', snap => {
+  dbData = snap.val() || {};
+  applyDbData();
+});
+
+if (currentUser) {
+  document.getElementById('name-modal').classList.add('hidden');
+  document.getElementById('badge-name').textContent = currentUser;
+}
+buildTable();
+</script>
+</body>
+</html>
