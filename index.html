@@ -297,7 +297,8 @@ function buildSession({ id, start, end, young, older }) {
       names.forEach(name => {
         const cbId = `s${id}-cb-${slotKey}-${name}`;
         const isOlder = older.includes(name);
-        const greyed = isOlder && !isLastSlot;
+        const isYoung = young.includes(name);
+        const greyed = (isOlder && !isLastSlot) || (isYoung && isLastSlot);
         const isMine = name === currentUser && !greyed;
         const divClass = name === older[0] ? ' older-start' : '';
         html += `<td class="check-cell${divClass}${greyed ? ' greyed' : ''}">
