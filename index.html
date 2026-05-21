@@ -41,21 +41,40 @@
 
   #badge-wrap { text-align: center; }
   #user-badge {
-    background: white; margin: 16px auto; padding: 10px 16px;
+    background: white; margin: 16px auto 0; padding: 10px 16px;
     border-radius: 50px; display: inline-flex; align-items: center; gap: 8px;
     font-size: 0.85rem; color: #374151; box-shadow: 0 2px 8px rgba(0,0,0,0.08); cursor: pointer;
   }
   #user-badge .dot { width: 8px; height: 8px; border-radius: 50%; background: #10b981; }
   #user-badge .dot.offline { background: #ef4444; }
 
+  /* Tabs */
+  .tab-bar {
+    display: flex; max-width: 860px; margin: 16px auto 0; padding: 0 12px;
+    gap: 8px;
+  }
+  .tab {
+    flex: 1; padding: 12px 16px; background: white; border: 2px solid #e5e7eb;
+    border-radius: 12px 12px 0 0; cursor: pointer;
+    font-size: 0.9rem; font-weight: 600; color: #6b7280;
+    transition: all 0.15s; text-align: center; line-height: 1.2;
+  }
+  .tab:hover { border-color: #bae6fd; color: #0ea5e9; }
+  .tab.active { color: #0284c7; border-color: #0ea5e9; border-bottom-color: #f0f9ff; background: #f0f9ff; }
+  .tab-sub { display: block; font-size: 0.72rem; font-weight: 400; color: #9ca3af; margin-top: 3px; }
+  .tab.active .tab-sub { color: #7dd3fc; }
+
+  /* Session panels */
+  .session-panel { display: none; }
+  .session-panel.active { display: block; }
+
   .table-wrap { overflow-x: auto; padding: 0 12px 40px; max-width: 860px; margin: 0 auto; }
 
   table {
     width: 100%; border-collapse: collapse; background: white;
-    border-radius: 16px; overflow: hidden; box-shadow: 0 2px 16px rgba(0,0,0,0.07);
+    border-radius: 0 0 16px 16px; overflow: hidden; box-shadow: 0 4px 16px rgba(0,0,0,0.07);
   }
 
-  /* Two-row header */
   thead tr.group-row th {
     padding: 12px 10px 8px; font-size: 0.78rem; font-weight: 700;
     text-align: center; text-transform: uppercase; letter-spacing: 0.7px;
@@ -71,25 +90,14 @@
   .th-date-name { background: #0ea5e9; color: white; text-align: left; padding-left: 16px; min-width: 120px; }
   .th-young-name { background: #7c3aed; color: white; }
   .th-older-name { background: #ea580c; color: white; }
-  .th-older-name:first-of-type { border-left: 2px solid rgba(255,255,255,0.3); }
+  .th-older-first { border-left: 2px solid rgba(255,255,255,0.3); }
 
-  /* Session header rows */
-  .session-row td {
-    padding: 10px 16px; font-weight: 700; font-size: 0.8rem;
-    text-transform: uppercase; letter-spacing: 0.8px;
-    background: #0ea5e9; color: white; border-top: 2px solid #bae6fd;
-  }
-
-  /* Date rows */
   tbody tr.date-row td {
     padding: 10px 8px; border-bottom: 1px solid #f0f9ff; vertical-align: middle;
   }
   tbody tr.date-row td:first-child { padding-left: 16px; font-size: 0.85rem; color: #374151; font-weight: 500; }
-
-  /* Group dividers in data rows */
   td.older-start { border-left: 2px solid #e5e7eb; }
 
-  /* Checkboxes */
   .check-cell { text-align: center; }
   .check-cell input[type=checkbox] { display: none; }
   .check-cell label {
@@ -112,9 +120,12 @@
     <p>Pick your name to check off your Thursday lessons</p>
     <button class="name-btn" onclick="setUser('Chloe')">Chloe</button>
     <button class="name-btn" onclick="setUser('Noelle')">Noelle</button>
+    <button class="name-btn" onclick="setUser('Simon')">Simon</button>
+    <button class="name-btn" onclick="setUser('Charlie')">Charlie</button>
     <button class="name-btn" onclick="setUser('Remy')">Remy</button>
     <button class="name-btn" onclick="setUser('Luke')">Luke</button>
     <button class="name-btn" onclick="setUser('Max')">Max</button>
+    <button class="name-btn" onclick="setUser('Leo')">Leo</button>
   </div>
 </div>
 
@@ -131,24 +142,62 @@
   </div>
 </div>
 
-<div class="table-wrap">
-  <table>
-    <thead>
-      <tr class="group-row">
-        <th class="th-date" rowspan="2">Date</th>
-        <th class="th-young" colspan="2">Young 1:1</th>
-        <th class="th-older" colspan="3">Older Group</th>
-      </tr>
-      <tr class="name-row">
-        <th class="th-young-name">Chloe</th>
-        <th class="th-young-name">Noelle</th>
-        <th class="th-older-name" style="border-left:2px solid rgba(255,255,255,0.3)">Remy</th>
-        <th class="th-older-name">Luke</th>
-        <th class="th-older-name">Max</th>
-      </tr>
-    </thead>
-    <tbody id="table-body"></tbody>
-  </table>
+<div class="tab-bar">
+  <button id="tab-1" class="tab active" onclick="switchTab(1)">
+    Session 1 <span class="tab-sub">June 4 – July 9</span>
+  </button>
+  <button id="tab-2" class="tab" onclick="switchTab(2)">
+    Session 2 <span class="tab-sub">July 16 – Aug 20</span>
+  </button>
+</div>
+
+<!-- Session 1: Chloe, Noelle | Remy, Luke, Max -->
+<div id="panel-1" class="session-panel active">
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr class="group-row">
+          <th class="th-date" rowspan="2">Date</th>
+          <th class="th-young" colspan="2">Young 1:1</th>
+          <th class="th-older" colspan="3">Older Group</th>
+        </tr>
+        <tr class="name-row">
+          <th class="th-young-name">Chloe</th>
+          <th class="th-young-name">Noelle</th>
+          <th class="th-older-name th-older-first">Remy</th>
+          <th class="th-older-name">Luke</th>
+          <th class="th-older-name">Max</th>
+        </tr>
+      </thead>
+      <tbody id="body-1"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Session 2: Chloe, Noelle, Simon, Charlie | Remy, Luke, Max, Leo -->
+<div id="panel-2" class="session-panel">
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr class="group-row">
+          <th class="th-date" rowspan="2">Date</th>
+          <th class="th-young" colspan="4">Young 1:1</th>
+          <th class="th-older" colspan="4">Older Group</th>
+        </tr>
+        <tr class="name-row">
+          <th class="th-young-name">Chloe</th>
+          <th class="th-young-name">Noelle</th>
+          <th class="th-young-name">Simon</th>
+          <th class="th-young-name">Charlie</th>
+          <th class="th-older-name th-older-first">Remy</th>
+          <th class="th-older-name">Luke</th>
+          <th class="th-older-name">Max</th>
+          <th class="th-older-name">Leo</th>
+        </tr>
+      </thead>
+      <tbody id="body-2"></tbody>
+    </table>
+  </div>
 </div>
 
 <script>
@@ -159,23 +208,32 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 const ref = db.ref('swimming');
 
-const NAMES = ['Chloe', 'Noelle', 'Remy', 'Luke', 'Max'];
+const SESSION_CONFIG = [
+  {
+    id: 1,
+    start: [2026, 5, 4],
+    end:   [2026, 6, 9],
+    young: ['Chloe', 'Noelle'],
+    older: ['Remy', 'Luke', 'Max']
+  },
+  {
+    id: 2,
+    start: [2026, 6, 16],
+    end:   [2026, 7, 20],
+    young: ['Chloe', 'Noelle', 'Simon', 'Charlie'],
+    older: ['Remy', 'Luke', 'Max', 'Leo']
+  }
+];
+
 let currentUser = localStorage.getItem('swim-user') || null;
 let dbData = {};
-
-const SESSIONS = [
-  { label: 'Session 1 — June 4 to July 9',     start: [2026,5,4],  end: [2026,6,9]  },
-  { label: 'Session 2 — July 16 to August 20',  start: [2026,6,16], end: [2026,7,20] }
-];
 
 function getThursdays(start, end) {
   const dates = [];
   const d = new Date(...start);
   const last = new Date(...end);
   while (d <= last) {
-    if (d.getDay() === 4) {
-      dates.push({ date: new Date(d), key: d.toISOString().slice(0,10) });
-    }
+    if (d.getDay() === 4) dates.push({ date: new Date(d), key: d.toISOString().slice(0,10) });
     d.setDate(d.getDate() + 1);
   }
   return dates;
@@ -184,62 +242,64 @@ function getThursdays(start, end) {
 const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 function fmt(d) { return `Thu, ${MONTHS[d.getMonth()]} ${d.getDate()}`; }
 
-function buildTable() {
-  const tbody = document.getElementById('table-body');
+function buildSession({ id, start, end, young, older }) {
+  const names = [...young, ...older];
+  const tbody = document.getElementById(`body-${id}`);
   tbody.innerHTML = '';
+  const totalCols = 1 + names.length;
 
-  SESSIONS.forEach(({ label, start, end }) => {
-    const srow = document.createElement('tr');
-    srow.className = 'session-row';
-    srow.innerHTML = `<td colspan="6">${label}</td>`;
-    tbody.appendChild(srow);
+  getThursdays(start, end).forEach(({ date, key }) => {
+    const tr = document.createElement('tr');
+    tr.className = 'date-row';
+    tr.id = `s${id}-row-${key}`;
 
-    getThursdays(start, end).forEach(({ date, key }) => {
-      const tr = document.createElement('tr');
-      tr.className = 'date-row';
-      tr.id = `row-${key}`;
+    let html = `<td>${fmt(date)}</td>`;
+    names.forEach(name => {
+      const cbId = `s${id}-cb-${key}-${name}`;
+      const isMine = name === currentUser;
+      const divClass = name === older[0] ? ' older-start' : '';
+      html += `<td class="check-cell${divClass}">
+        <input type="checkbox" id="${cbId}" data-key="${key}" data-name="${name}" ${isMine ? '' : 'disabled'}>
+        <label for="${cbId}" class="${isMine ? 'mine' : ''}"></label>
+      </td>`;
+    });
+    tr.innerHTML = html;
+    tbody.appendChild(tr);
 
-      let html = `<td>${fmt(date)}</td>`;
-      NAMES.forEach(name => {
-        const id = `cb-${key}-${name}`;
-        const isMine = name === currentUser;
-        const divClass = name === 'Remy' ? ' older-start' : '';
-        html += `<td class="check-cell${divClass}">
-          <input type="checkbox" id="${id}" data-key="${key}" data-name="${name}" ${isMine ? '' : 'disabled'}>
-          <label for="${id}" class="${isMine ? 'mine' : ''}"></label>
-        </td>`;
-      });
-      tr.innerHTML = html;
-      tbody.appendChild(tr);
-
-      NAMES.forEach(name => {
-        if (name === currentUser) {
-          const cb = document.getElementById(`cb-${key}-${name}`);
-          if (cb) cb.addEventListener('change', () => {
-            ref.child(key).child(name).set(cb.checked);
-          });
-        }
-      });
+    names.forEach(name => {
+      if (name !== currentUser) return;
+      const cb = document.getElementById(`s${id}-cb-${key}-${name}`);
+      if (cb) cb.addEventListener('change', () => ref.child(key).child(name).set(cb.checked));
     });
   });
+}
 
+function buildAllTables() {
+  SESSION_CONFIG.forEach(buildSession);
   applyDbData();
 }
 
 function applyDbData() {
-  SESSIONS.forEach(({ start, end }) => {
+  SESSION_CONFIG.forEach(({ id, start, end, young, older }) => {
+    const names = [...young, ...older];
     getThursdays(start, end).forEach(({ key }) => {
       const dayData = dbData[key] || {};
-      NAMES.forEach(name => {
-        const checked = !!dayData[name];
-        const cb = document.getElementById(`cb-${key}-${name}`);
+      names.forEach(name => {
+        const cb = document.getElementById(`s${id}-cb-${key}-${name}`);
         const lbl = cb?.nextElementSibling;
         if (!cb) return;
-        cb.checked = checked;
-        if (lbl && name !== currentUser) lbl.classList.toggle('other-checked', checked);
+        cb.checked = !!dayData[name];
+        if (lbl && name !== currentUser) lbl.classList.toggle('other-checked', !!dayData[name]);
       });
     });
   });
+}
+
+function switchTab(n) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.session-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById(`tab-${n}`).classList.add('active');
+  document.getElementById(`panel-${n}`).classList.add('active');
 }
 
 function setUser(name) {
@@ -247,7 +307,7 @@ function setUser(name) {
   localStorage.setItem('swim-user', name);
   document.getElementById('name-modal').classList.add('hidden');
   document.getElementById('badge-name').textContent = name;
-  buildTable();
+  buildAllTables();
 }
 
 function changeUser() {
@@ -269,7 +329,7 @@ if (currentUser) {
   document.getElementById('name-modal').classList.add('hidden');
   document.getElementById('badge-name').textContent = currentUser;
 }
-buildTable();
+buildAllTables();
 </script>
 </body>
 </html>
