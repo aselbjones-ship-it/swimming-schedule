@@ -334,20 +334,36 @@ function updateDayExclusivity() {
   SESSION_CONFIG.forEach(({ id, start, end, young, older }) => {
     const names = [...young, ...older];
     if (!names.includes(currentUser)) return;
+    const isYoung = young.includes(currentUser);
+
     getThursdays(start, end).forEach(({ key: dateKey }) => {
       const slots = getSlots(dateKey, id);
-      const checkedKey = slots.reduce((found, { key: slotKey }) => {
-        if (found) return found;
+
+      // Which slot has the current user already picked on this day?
+      const myCheckedKey = slots.find(({ key: slotKey }) => {
         const cb = document.getElementById(`s${id}-cb-${slotKey}-${currentUser}`);
-        return cb?.checked ? slotKey : null;
-      }, null);
+        return cb?.checked;
+      })?.key ?? null;
+
+      // For Young 1:1: which slots are claimed by other members?
+      const takenByOthers = new Set();
+      if (isYoung) {
+        young.forEach(name => {
+          if (name === currentUser) return;
+          slots.forEach(({ key: slotKey }) => {
+            const cb = document.getElementById(`s${id}-cb-${slotKey}-${name}`);
+            if (cb?.checked) takenByOthers.add(slotKey);
+          });
+        });
+      }
+
       slots.forEach(({ key: slotKey }) => {
         const cb = document.getElementById(`s${id}-cb-${slotKey}-${currentUser}`);
         const lbl = cb?.nextElementSibling;
         if (!cb || !lbl) return;
-        const blocked = !!checkedKey && slotKey !== checkedKey;
-        lbl.classList.toggle('slot-blocked', blocked);
-        cb.disabled = blocked;
+        const blocked = (myCheckedKey && slotKey !== myCheckedKey) || takenByOthers.has(slotKey);
+        lbl.classList.toggle('slot-blocked', !!blocked);
+        cb.disabled = !!blocked;
       });
     });
   });
