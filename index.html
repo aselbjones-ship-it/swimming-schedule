@@ -48,10 +48,8 @@
   #user-badge .dot { width: 8px; height: 8px; border-radius: 50%; background: #10b981; }
   #user-badge .dot.offline { background: #ef4444; }
 
-  /* Tabs */
   .tab-bar {
-    display: flex; max-width: 860px; margin: 16px auto 0; padding: 0 12px;
-    gap: 8px;
+    display: flex; max-width: 860px; margin: 16px auto 0; padding: 0 12px; gap: 8px;
   }
   .tab {
     flex: 1; padding: 12px 16px; background: white; border: 2px solid #e5e7eb;
@@ -64,7 +62,6 @@
   .tab-sub { display: block; font-size: 0.72rem; font-weight: 400; color: #9ca3af; margin-top: 3px; }
   .tab.active .tab-sub { color: #7dd3fc; }
 
-  /* Session panels */
   .session-panel { display: none; }
   .session-panel.active { display: block; }
 
@@ -79,7 +76,7 @@
     padding: 12px 10px 8px; font-size: 0.78rem; font-weight: 700;
     text-align: center; text-transform: uppercase; letter-spacing: 0.7px;
   }
-  .th-date { background: #f1f5f9; color: #64748b; }
+  .th-time { background: #f1f5f9; color: #64748b; }
   .th-young { background: #f5f3ff; color: #6d28d9; border-left: 2px solid #e9d5ff; }
   .th-older { background: #fff7ed; color: #c2410c; border-left: 2px solid #fed7aa; }
 
@@ -87,29 +84,42 @@
     padding: 10px 8px; font-size: 0.82rem; font-weight: 600;
     text-align: center; white-space: nowrap;
   }
-  .th-date-name { background: #0ea5e9; color: white; text-align: left; padding-left: 16px; min-width: 120px; }
+  .th-time-name { background: #0ea5e9; color: white; text-align: left; padding-left: 16px; min-width: 90px; }
   .th-young-name { background: #7c3aed; color: white; }
   .th-older-name { background: #ea580c; color: white; }
   .th-older-first { border-left: 2px solid rgba(255,255,255,0.3); }
 
-  tbody tr.date-row td {
-    padding: 10px 8px; border-bottom: 1px solid #f0f9ff; vertical-align: middle;
+  /* Date group header rows */
+  .date-group-row td {
+    padding: 8px 16px; font-weight: 700; font-size: 0.82rem;
+    background: #e0f2fe; color: #0369a1;
+    border-top: 2px solid #bae6fd; letter-spacing: 0.3px;
   }
-  tbody tr.date-row td:first-child { padding-left: 16px; font-size: 0.85rem; color: #374151; font-weight: 500; }
+
+  /* Time slot rows */
+  tbody tr.slot-row td {
+    padding: 8px 8px; border-bottom: 1px solid #f0f9ff; vertical-align: middle;
+  }
+  tbody tr.slot-row td:first-child {
+    padding-left: 16px; font-size: 0.82rem; color: #64748b;
+    font-weight: 500; white-space: nowrap;
+  }
+  tbody tr.slot-row:last-of-type td { border-bottom: 2px solid #e0f2fe; }
+
   td.older-start { border-left: 2px solid #e5e7eb; }
 
   .check-cell { text-align: center; }
   .check-cell input[type=checkbox] { display: none; }
   .check-cell label {
     display: inline-flex; align-items: center; justify-content: center;
-    width: 34px; height: 34px; border-radius: 8px;
+    width: 32px; height: 32px; border-radius: 8px;
     border: 2px solid #d1d5db; background: white; cursor: pointer; transition: all 0.15s;
   }
   .check-cell input:checked + label { background: #dcfce7; border-color: #16a34a; }
-  .check-cell input:checked + label::after { content: '✓'; color: #16a34a; font-weight: 900; font-size: 1.15rem; }
+  .check-cell input:checked + label::after { content: '✓'; color: #16a34a; font-weight: 900; font-size: 1.1rem; }
   .check-cell label:not(.mine) { cursor: default; pointer-events: none; }
   .check-cell label.other-checked { background: #dcfce7; border-color: #16a34a; }
-  .check-cell label.other-checked::after { content: '✓'; color: #16a34a; font-weight: 900; font-size: 1.15rem; }
+  .check-cell label.other-checked::after { content: '✓'; color: #16a34a; font-weight: 900; font-size: 1.1rem; }
 </style>
 </head>
 <body>
@@ -122,8 +132,8 @@
     <button class="name-btn" onclick="setUser('Noelle')">Noelle</button>
     <button class="name-btn" onclick="setUser('Simon')">Simon</button>
     <button class="name-btn" onclick="setUser('Charlie')">Charlie</button>
-    <button class="name-btn" onclick="setUser('Remy')">Remy</button>
     <button class="name-btn" onclick="setUser('Luke')">Luke</button>
+    <button class="name-btn" onclick="setUser('Remy')">Remy</button>
     <button class="name-btn" onclick="setUser('Max')">Max</button>
     <button class="name-btn" onclick="setUser('Leo')">Leo</button>
   </div>
@@ -151,13 +161,13 @@
   </button>
 </div>
 
-<!-- Session 1: Chloe, Noelle | Remy, Luke, Max -->
+<!-- Session 1: Chloe, Noelle | Luke, Remy, Max -->
 <div id="panel-1" class="session-panel active">
   <div class="table-wrap">
     <table>
       <thead>
         <tr class="group-row">
-          <th class="th-date" rowspan="2">Date</th>
+          <th class="th-time" rowspan="2">Time</th>
           <th class="th-young" colspan="2">Young 1:1</th>
           <th class="th-older" colspan="3">Older Group</th>
         </tr>
@@ -174,13 +184,13 @@
   </div>
 </div>
 
-<!-- Session 2: Chloe, Noelle, Simon, Charlie | Remy, Luke, Max, Leo -->
+<!-- Session 2: Chloe, Noelle, Simon, Charlie | Luke, Remy, Max, Leo -->
 <div id="panel-2" class="session-panel">
   <div class="table-wrap">
     <table>
       <thead>
         <tr class="group-row">
-          <th class="th-date" rowspan="2">Date</th>
+          <th class="th-time" rowspan="2">Time</th>
           <th class="th-young" colspan="4">Young 1:1</th>
           <th class="th-older" colspan="4">Older Group</th>
         </tr>
@@ -239,37 +249,64 @@ function getThursdays(start, end) {
   return dates;
 }
 
+function addMins(t, mins) {
+  const total = Math.floor(t / 100) * 60 + (t % 100) + mins;
+  return Math.floor(total / 60) * 100 + (total % 60);
+}
+
+function getSlots(dateKey, sessionId) {
+  const start = sessionId === 1 && dateKey === '2026-06-04' ? 1530 : 1500;
+  const count = sessionId === 1 ? 3 : 4;
+  return Array.from({ length: count }, (_, i) => {
+    const t = addMins(start, i * 30);
+    return { label: fmtTime(t), key: `${dateKey}-${t}` };
+  });
+}
+
+function fmtTime(t) {
+  const h = Math.floor(t / 100);
+  const m = t % 100;
+  return `${h > 12 ? h - 12 : h}:${String(m).padStart(2,'0')} ${h >= 12 ? 'PM' : 'AM'}`;
+}
+
 const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-function fmt(d) { return `Thu, ${MONTHS[d.getMonth()]} ${d.getDate()}`; }
+function fmtDate(d) { return `Thu, ${MONTHS[d.getMonth()]} ${d.getDate()}`; }
 
 function buildSession({ id, start, end, young, older }) {
   const names = [...young, ...older];
+  const totalCols = 1 + names.length;
   const tbody = document.getElementById(`body-${id}`);
   tbody.innerHTML = '';
-  const totalCols = 1 + names.length;
 
-  getThursdays(start, end).forEach(({ date, key }) => {
-    const tr = document.createElement('tr');
-    tr.className = 'date-row';
-    tr.id = `s${id}-row-${key}`;
+  getThursdays(start, end).forEach(({ date, key: dateKey }) => {
+    const groupRow = document.createElement('tr');
+    groupRow.className = 'date-group-row';
+    groupRow.innerHTML = `<td colspan="${totalCols}">${fmtDate(date)}</td>`;
+    tbody.appendChild(groupRow);
 
-    let html = `<td>${fmt(date)}</td>`;
-    names.forEach(name => {
-      const cbId = `s${id}-cb-${key}-${name}`;
-      const isMine = name === currentUser;
-      const divClass = name === older[0] ? ' older-start' : '';
-      html += `<td class="check-cell${divClass}">
-        <input type="checkbox" id="${cbId}" data-key="${key}" data-name="${name}" ${isMine ? '' : 'disabled'}>
-        <label for="${cbId}" class="${isMine ? 'mine' : ''}"></label>
-      </td>`;
-    });
-    tr.innerHTML = html;
-    tbody.appendChild(tr);
+    getSlots(dateKey, id).forEach(({ label, key: slotKey }) => {
+      const tr = document.createElement('tr');
+      tr.className = 'slot-row';
+      tr.id = `s${id}-${slotKey}`;
 
-    names.forEach(name => {
-      if (name !== currentUser) return;
-      const cb = document.getElementById(`s${id}-cb-${key}-${name}`);
-      if (cb) cb.addEventListener('change', () => ref.child(key).child(name).set(cb.checked));
+      let html = `<td>${label}</td>`;
+      names.forEach(name => {
+        const cbId = `s${id}-cb-${slotKey}-${name}`;
+        const isMine = name === currentUser;
+        const divClass = name === older[0] ? ' older-start' : '';
+        html += `<td class="check-cell${divClass}">
+          <input type="checkbox" id="${cbId}" ${isMine ? '' : 'disabled'}>
+          <label for="${cbId}" class="${isMine ? 'mine' : ''}"></label>
+        </td>`;
+      });
+      tr.innerHTML = html;
+      tbody.appendChild(tr);
+
+      names.forEach(name => {
+        if (name !== currentUser) return;
+        const cb = document.getElementById(`s${id}-cb-${slotKey}-${name}`);
+        if (cb) cb.addEventListener('change', () => ref.child(slotKey).child(name).set(cb.checked));
+      });
     });
   });
 }
@@ -282,14 +319,16 @@ function buildAllTables() {
 function applyDbData() {
   SESSION_CONFIG.forEach(({ id, start, end, young, older }) => {
     const names = [...young, ...older];
-    getThursdays(start, end).forEach(({ key }) => {
-      const dayData = dbData[key] || {};
-      names.forEach(name => {
-        const cb = document.getElementById(`s${id}-cb-${key}-${name}`);
-        const lbl = cb?.nextElementSibling;
-        if (!cb) return;
-        cb.checked = !!dayData[name];
-        if (lbl && name !== currentUser) lbl.classList.toggle('other-checked', !!dayData[name]);
+    getThursdays(start, end).forEach(({ key: dateKey }) => {
+      getSlots(dateKey, id).forEach(({ key: slotKey }) => {
+        const slotData = dbData[slotKey] || {};
+        names.forEach(name => {
+          const cb = document.getElementById(`s${id}-cb-${slotKey}-${name}`);
+          const lbl = cb?.nextElementSibling;
+          if (!cb) return;
+          cb.checked = !!slotData[name];
+          if (lbl && name !== currentUser) lbl.classList.toggle('other-checked', !!slotData[name]);
+        });
       });
     });
   });
