@@ -120,6 +120,8 @@
   .check-cell label:not(.mine) { cursor: default; pointer-events: none; }
   .check-cell label.other-checked { background: #dcfce7; border-color: #16a34a; }
   .check-cell label.other-checked::after { content: '✓'; color: #16a34a; font-weight: 900; font-size: 1.1rem; }
+  .check-cell.greyed label { background: #f3f4f6; border-color: #e5e7eb; pointer-events: none; cursor: default; }
+  .check-cell.greyed label::after { display: none; }
 </style>
 </head>
 <body>
@@ -284,7 +286,9 @@ function buildSession({ id, start, end, young, older }) {
     groupRow.innerHTML = `<td colspan="${totalCols}">${fmtDate(date)}</td>`;
     tbody.appendChild(groupRow);
 
-    getSlots(dateKey, id).forEach(({ label, key: slotKey }) => {
+    const slots = getSlots(dateKey, id);
+    slots.forEach(({ label, key: slotKey }, slotIdx) => {
+      const isLastSlot = slotIdx === slots.length - 1;
       const tr = document.createElement('tr');
       tr.className = 'slot-row';
       tr.id = `s${id}-${slotKey}`;
@@ -292,9 +296,11 @@ function buildSession({ id, start, end, young, older }) {
       let html = `<td>${label}</td>`;
       names.forEach(name => {
         const cbId = `s${id}-cb-${slotKey}-${name}`;
-        const isMine = name === currentUser;
+        const isOlder = older.includes(name);
+        const greyed = isOlder && !isLastSlot;
+        const isMine = name === currentUser && !greyed;
         const divClass = name === older[0] ? ' older-start' : '';
-        html += `<td class="check-cell${divClass}">
+        html += `<td class="check-cell${divClass}${greyed ? ' greyed' : ''}">
           <input type="checkbox" id="${cbId}" ${isMine ? '' : 'disabled'}>
           <label for="${cbId}" class="${isMine ? 'mine' : ''}"></label>
         </td>`;
@@ -304,6 +310,8 @@ function buildSession({ id, start, end, young, older }) {
 
       names.forEach(name => {
         if (name !== currentUser) return;
+        const isOlder = older.includes(name);
+        if (isOlder && !isLastSlot) return;
         const cb = document.getElementById(`s${id}-cb-${slotKey}-${name}`);
         if (cb) cb.addEventListener('change', () => ref.child(slotKey).child(name).set(cb.checked));
       });
