@@ -352,8 +352,7 @@ function updateDayExclusivity() {
         young.forEach(name => {
           if (name === currentUser) return;
           slots.forEach(({ key: slotKey }) => {
-            const cb = document.getElementById(`s${id}-cb-${slotKey}-${name}`);
-            if (cb?.checked) takenByOthers.add(slotKey);
+            if (dbData[slotKey]?.[name]) takenByOthers.add(slotKey);
           });
         });
       }
